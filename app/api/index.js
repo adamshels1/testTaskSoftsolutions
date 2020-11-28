@@ -1,3 +1,3 @@
-import mainApi from './main';
+import userApi from './userApi';
 
-export {mainApi};
+export {userApi};

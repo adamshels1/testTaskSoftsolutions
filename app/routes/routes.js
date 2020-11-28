@@ -37,10 +37,10 @@ const AppScreens = () => (
 );
 
 export const Route = () => {
-    const user = useSelector((state) => state.userReducer.user);
+    const token = useSelector((state) => state.userReducer.token);
     return (
         <NavigationContainer>
-            {user ?
+            {token ?
                 (
                     <AppScreens options={{ animationEnabled: false }} />
                 ) : (

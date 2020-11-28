@@ -1,4 +1,4 @@
-const BASE_URL = 'https://enzo.centraltaxisne.co.uk';
+const BASE_URL = 'http://test-reviews.appwilio-sites.com';
 
 
 export default {

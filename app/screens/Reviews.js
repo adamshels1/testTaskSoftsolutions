@@ -6,10 +6,16 @@ import {
     FlatList,
     TouchableOpacity
 } from 'react-native';
+import { connect } from 'react-redux';
 import { Container, Loader, Review } from '@components';
 
 
 class Reviews extends React.Component {
+
+    onLogout = () => {
+        this.props.setToken(null);
+        this.props.setUser(null);
+    }
 
     renderItem = ({ item }) => {
         return <Review />
@@ -20,7 +26,7 @@ class Reviews extends React.Component {
             <Container safeArea={true}>
 
                 <View style={styles.headerWrap}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={this.onLogout}>
                         <Text style={styles.headerButton}>Logout</Text>
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Reviews</Text>
@@ -74,4 +80,28 @@ const styles = StyleSheet.create({
     }
 })
 
-export default Reviews;
+const mapStateToProps = state => {
+    return {};
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+
+        setUser: payload =>
+            dispatch({
+                type: 'SET_USER',
+                payload,
+            }),
+
+        setToken: payload =>
+            dispatch({
+                type: 'SET_TOKEN',
+                payload,
+            }),
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(Reviews);

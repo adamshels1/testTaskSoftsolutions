@@ -10,6 +10,7 @@ import {
 import { connect } from 'react-redux';
 import { Button, Title, Input, Container, Loader } from '@components';
 import { helper } from '@services';
+import { userApi } from '@api';
 import AlertAsync from "react-native-alert-async";
 const isIos = Platform.OS === 'ios';
 
@@ -23,16 +24,26 @@ class Login extends React.Component {
     };
 
     onLogin = async () => {
-        this.setState({ isLoading: true });
-        await helper.sleep(2000);
-        this.setState({ isLoading: false });
-        await helper.sleep(200);
-        if (this.state.email === 'enzo@example.com' && this.state.password === '123') {
-            this.props.navigation.navigate('Home');
-        } else {
+        try {
+            const { email, password } = this.state;
+            this.setState({ isLoading: true });
+
+            const res = await userApi.login(email, password);
+            this.setState({ isLoading: false });
+            const { user, token } = res;
+            if (token && user) {
+                this.props.setToken(token);
+                this.props.setUser(user);
+            } else {
+                await helper.sleep(100);
+                await AlertAsync('Invalid username or password');
+            }
+
+        } catch (e) {
+            this.setState({ isLoading: false });
+            await helper.sleep(100);
             await AlertAsync('Invalid username or password');
         }
-
     }
 
 
@@ -203,9 +214,16 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        setStartNumberOfMilesTravelled: payload =>
+
+        setUser: payload =>
             dispatch({
-                type: 'START_NUMBER_OF_MILES_TRAVELLED',
+                type: 'SET_USER',
+                payload,
+            }),
+
+        setToken: payload =>
+            dispatch({
+                type: 'SET_TOKEN',
                 payload,
             }),
     };
