@@ -1,0 +1,16 @@
+{
+    "plugins": [
+      ["module-resolver", {
+        "root": ["./app"],
+        "alias": {
+          "@screens": "./app/screens",
+          "@components": "./app/components",
+          "@assets": "./app/assets",
+          "@constants": "./app/constants",
+          "@style": "./app/style",
+          "@services": "./app/services",
+          "@api": "./app/api"
+        }
+      }]
+    ]
+  }
