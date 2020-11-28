@@ -10,15 +10,19 @@ import {
     Platform,
     Image,
 } from 'react-native';
+import { connect } from 'react-redux';
 import { RNCamera } from 'react-native-camera';
 import * as Animatable from 'react-native-animatable';
 import {
     CameraCounter,
     Container,
+    Loader
 } from '@components';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { helper } from '@services';
+import { reviewsApi } from '@api';
 import Orientation from 'react-native-orientation';
+import AlertAsync from 'react-native-alert-async';
 
 const flashModeOrder = {
     off: 'on',
@@ -58,7 +62,7 @@ const rotate_90 = {
 
 const DESIRED_RATIO = '16:9';
 
-export default class CameraScreen extends React.Component {
+class Camera extends React.Component {
     counterRef = null;
     state = {
         flash: 'off',
@@ -85,6 +89,7 @@ export default class CameraScreen extends React.Component {
         textBlocks: [],
         focusPointAnimation: null,
         orientationRotateStyle: rotate_0,
+        isLoading: false
     };
 
     async componentDidMount() {
@@ -147,7 +152,7 @@ export default class CameraScreen extends React.Component {
     };
 
     takeVideo = async () => {
-        const { isRecording, recordOptions, question } = this.state;
+        const { isRecording, recordOptions } = this.state;
         if (isRecording) {
             this.camera.stopRecording();
             return;
@@ -159,22 +164,33 @@ export default class CameraScreen extends React.Component {
 
                 if (promise) {
                     this.setState({ isRecording: true });
-                    let data = await promise;
-                    data.uri = helper.filePathSource(data.uri);
+                    let fileData = await promise;
+                    this.saveReview(fileData);
                     this.counterRef.clearCount();
                     this.setState({ isRecording: false });
-                    const { params } = this.props.navigation.state;
-                    navigation.navigate('VideoView', {
-                        data,
-                        ...params,
-                        question,
-                    });
                 }
             } catch (e) {
                 console.error(e);
             }
         }
     };
+
+    saveReview = async (fileData) => {
+        try {
+            this.setState({isLoading: true});
+            await reviewsApi.saveReview(this.props.token, fileData, {
+                title: 'This is Test Review',
+                service_id: "1",
+                review_type: 'video'
+            });
+            
+            this.setState({isLoading: false});
+        } catch (e) {
+            await helper.sleep(100);
+            this.setState({isLoading: false});
+            await AlertAsync(e.message);
+        }
+    }
 
     textRecognized = object => {
         const { textBlocks } = object;
@@ -209,6 +225,7 @@ export default class CameraScreen extends React.Component {
 
         return (
             <Container safeArea={true} style={styles.mainContainer}>
+                <Loader visible={this.state.isLoading} />
                 <RNCamera
                     ref={ref => {
                         this.camera = ref;
@@ -287,7 +304,7 @@ export default class CameraScreen extends React.Component {
                             </TouchableOpacity>
                         </Animatable.View>
 
-                        <Text style={{ color: '#fff', fontSize: 16 }}>00:00:00</Text>
+                        <Text style={styles.recordTimer}>00:00:00</Text>
 
                         <Animatable.View animation={orientationRotateStyle}>
                             <TouchableOpacity
@@ -457,5 +474,25 @@ const styles = StyleSheet.create({
     iconBack: {
         width: 18,
         height: 14
+    },
+    recordTimer: {
+        color: '#fff',
+        fontSize: 16
     }
 });
+
+const mapStateToProps = state => {
+    const { token } = state.userReducer;
+    return {
+        token
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {};
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(Camera);

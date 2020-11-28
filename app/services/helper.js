@@ -13,5 +13,8 @@ export default {
             return false;
         }
         return true;
-    }
+    },
+    filePathSource: (filePath) => {
+        return ((Platform.OS === 'ios') || (Platform.OS === 'android') && (filePath.includes('file://'))) ? filePath : 'file://' + filePath;
+    },
 };
