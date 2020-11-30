@@ -183,8 +183,10 @@ class Camera extends React.Component {
                 service_id: "1",
                 review_type: 'video'
             });
-            
             this.setState({isLoading: false});
+            await helper.sleep(100);
+            await AlertAsync('Successfully added!');
+            this.props.navigation.goBack();
         } catch (e) {
             await helper.sleep(100);
             this.setState({isLoading: false});

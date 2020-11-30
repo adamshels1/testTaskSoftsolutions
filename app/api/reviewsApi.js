@@ -36,4 +36,23 @@ const saveReview = async (token, fileData, body) => {
     return data;
 };
 
-export default { saveReview };
+const getReviews = async (token) => {
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+    };
+
+    const params = {
+        method: 'GET',
+        headers
+    };
+
+    const url = `${server.BASE_URL}/api/v1/reviews?status=draft`;
+    const response = await fetch(url, params);
+
+    const data = await response.json();
+
+    return data;
+};
+
+export default { saveReview, getReviews };

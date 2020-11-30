@@ -8,17 +8,44 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Container, Loader, Review } from '@components';
+import { reviewsApi } from '@api';
 
 
 class Reviews extends React.Component {
+
+    componentDidMount() {
+        this.loadReviews();
+    }
+
+    state = {
+        isLoadingReviews: false,
+        reviews: []
+    }
 
     onLogout = () => {
         this.props.setToken(null);
         this.props.setUser(null);
     }
 
+    loadReviews = async () => {
+        try {
+            this.setState({ isLoadingReviews: true });
+            const reviews = await reviewsApi.getReviews(this.props.token);
+            this.setState({ isLoadingReviews: false, reviews });
+        } catch (e) {
+            this.setState({ isLoadingReviews: false });
+            console.log(e);
+        }
+    }
+
     renderItem = ({ item }) => {
-        return <Review />
+        const { title, status, created, description } = item;
+        return <Review
+            title={title}
+            status={status}
+            created={created}
+            description={description}
+        />
     }
 
     render() {
@@ -38,10 +65,12 @@ class Reviews extends React.Component {
                 </View>
 
                 <FlatList
-                    data={[{}, {}]}
+                    data={this.state.reviews}
                     renderItem={this.renderItem}
                     keyExtractor={item => item.id}
                     style={styles.wrapReviews}
+                    refreshing={this.state.isLoadingReviews}
+                    onRefresh={this.loadReviews}
                 />
 
 
@@ -81,7 +110,10 @@ const styles = StyleSheet.create({
 })
 
 const mapStateToProps = state => {
-    return {};
+    const { token } = state.userReducer;
+    return {
+        token
+    };
 };
 
 const mapDispatchToProps = dispatch => {
